@@ -1,3 +1,4 @@
+# pyinstaller -F -n 'Frame Extractor' -w .\main.py --add-binary 'C:\Program Files (x86)\Python38-32\Lib\site-packages\cv2\opencv_videoio_ffmpeg420.dll;.'
 import sys
 from PyQt5 import QtWidgets
 from PyQt5 import QtGui
@@ -15,6 +16,7 @@ from tools.ui_main import *
 import json
 import os
 
+
 class Main(QtWidgets.QMainWindow):
     # class constructor
     def __init__(self, parent=None):
@@ -30,7 +32,7 @@ class Main(QtWidgets.QMainWindow):
         self.ui.pushButton.clicked.connect(self.pick_video)
         self.ui.pushButton_2.clicked.connect(self.pick_destination)
         self.ui.start_btn.clicked.connect(self.framify)
-    
+
     def set_video(self, video_path):
         self.cap = cv2.VideoCapture(video_path)
         self.img_index = 1
@@ -41,48 +43,52 @@ class Main(QtWidgets.QMainWindow):
         if ret == False:
             self.timer.stop()
             self.ui.warning_label.setText('Video Done')
-            self.ui.warning_label.setStyleSheet('color:rgb(0,250,0')
+            # self.ui.warning_label.setStyleSheet('color:rgb(0,250,0')
             self.cap.release()
-            self.ui.start_btn.setStyleSheet('background-color: rgb(0, 143, 0);')
-            self.ui.start_btn('Start')
+            self.ui.start_btn.setStyleSheet(
+                'background-color: rgb(0, 143, 0);')
+            self.ui.start_btn.setText('Start')
         else:
             height, width, channel = self.frame.shape
             step = channel * width
             # create QImage from image
-            qImg = QImage(self.frame.data, width, height, step, QImage.Format_RGB888)
+            qImg = QImage(self.frame.data, width, height,
+                          step, QImage.Format_BGR888)
             # show image in img_label
             self.ui.label.setPixmap(QPixmap.fromImage(qImg))
             # Stores frames
-            cv2.imwrite(self.ui.frame_line.text()+'/frameNo_'+str(self.img_index)+self.ui.format.currentText(), self.frame)
+            cv2.imwrite(self.ui.frame_line.text() + '/' + str(self.ui.frame_name_edit.text()) +
+                        str(self.img_index)+self.ui.format.currentText(), self.frame)
             self.img_index += 1
-
 
     def framify(self):
         if self.ui.start_btn.text() == 'Start':
             self.ui.start_btn.setText('Cancel')
-            self.ui.start_btn.setStyleSheet('background-color: rgb(143, 0, 0);')
+            self.ui.start_btn.setStyleSheet(
+                'background-color: rgb(143, 0, 0);')
             self.set_video(self.ui.video_line.text())
         elif self.ui.start_btn.text() == 'Cancel':
             self.timer.stop()
             self.ui.warning_label.setText('Video Done')
             self.cap.release()
             self.ui.start_btn.setText('Start')
-            self.ui.start_btn.setStyleSheet('background-color: rgb(0, 143, 0);')
-
+            self.ui.start_btn.setStyleSheet(
+                'background-color: rgb(0, 143, 0);')
 
     def pick_video(self):
         # self.ui.pushButton.setText(str(QFileDialog.getExistingDirectory(self, "Select Directory")))
         self.ui.video_line.setText(QFileDialog.getOpenFileName()[0])
 
     def pick_destination(self):
-        self.ui.frame_line.setText(str(QFileDialog.getExistingDirectory(self, "Select Directory")))
+        self.ui.frame_line.setText(
+            str(QFileDialog.getExistingDirectory(self, "Select Directory")))
+
 
 def main_window():  # Run application
     app = QApplication(sys.argv)
     # create and show mainWindow
     mainWindow = Main()
     mainWindow.showMaximized()
-
 
     sys.exit(app.exec_())
 
